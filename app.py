@@ -223,7 +223,6 @@ def co_relation():
 
     fig5 = px.scatter_3d(df, x='min_experience', y='max_experience', z='min_pay', color='min_pay', title='Relation between min_exp, max_exp and min_pay', color_continuous_scale=px.colors.sequential.RdBu, width=800, height=500, opacity=0.8, hover_data=['min_experience', 'max_experience', 'min_pay'], labels={'min_exp':'min_exp', 'max_exp':'max_exp', 'min_pay':'min_pay'}, template='plotly_dark')
 
-    #fig6 = 
 
     return render_template('corelation.html',
                             fig1=fig1.to_html(),
@@ -232,21 +231,28 @@ def co_relation():
                             fig4=fig4.to_html(),
                             fig5=fig5.to_html())
 
-#@app.route('/comparison')
-#def co_relation():
-    #df = load_dataset()
-    #fig7 = px.scatter(df, x='industry', y='max_pay', color='industry', title='Relation between max_pay and industry', color_continuous_scale=px.colors.sequential.RdBu, width=800, height=500, opacity=0.8, hover_data=['max_pay', 'industry'], labels={'max_pay':'max_pay', 'industry':'industry'}, template='plotly_dark')
+@app.route('/comparison')
+def co_relation():
+    df = load_dataset()
+    fig7 = px.scatter(df, x='industry', y='max_pay', color='industry', title='Relation between max_pay and industry', color_continuous_scale=px.colors.sequential.RdBu, width=800, height=500, opacity=0.8, hover_data=['max_pay', 'industry'], labels={'max_pay':'max_pay', 'industry':'industry'}, template='plotly_dark')
 
-    #fig8 = df[['min_pay','industry']].groupby(["industry"]).median().sort_values(by='min_pay',
-                                                                        #ascending=False).head(10)
-    #px.area()
+    fig8 = df[['min_pay','industry']].groupby(["industry"]).median().sort_values(by='min_pay',
+                                                                        ascending=False).head(10)
+    px.area(df, x='industry', y='min_pay', title='Relation between min_pay and industry', color_discrete_sequence=px.colors.sequential.RdBu, width=800, height=500, opacity=0.8, hover_data=['min_pay', 'industry'], labels={'min_pay':'min_pay', 'industry':'industry'}, template='plotly_dark')
 
-    #fig9 = 
+    fig9 = df[['avg_payrate','skills']].groupby(["skills"]).median().sort_values(by='avg_payrate',
+                                                                  ascending=False).head(10)
+    px.scatter(df, x='skills', y='avg_payrate', color='skills', title='Relation between avg_payrate and skills', color_continuous_scale=px.colors.sequential.RdBu, width=800, height=800, opacity=0.8, hover_data=['avg_payrate', 'skills'], labels={'avg_payrate':'avg_payrate', 'skills':'skills'}, template='plotly_dark')
 
-    #fig10 = 
+    fig10 = df[['avg_payrate','jobtitle']].groupby(["jobtitle"]).median().sort_values(by='avg_payrate',
+                                                                        ascending=False).head(10)
+    px.sunburst(df, path=['jobtitle'], values='avg_payrate', title='Relation between avg_payrate and jobtitle', color_discrete_sequential=px.colors.sequential.RdBu, width=800, height=800, opacity=0.8, hover_data=['avg_payrate', 'jobtitle'], labels={'avg_payrate':'avg_payrate', 'jobtitle':'jobtitle'}, template='plotly_dark') 
 
-    #return render_template('comparison.html',
-    #)
+    return render_template('comparison.html',
+                            fig7=fig7.to_html(),
+                            fig8=fig8.to_html(),
+                            fig9=fig9.to_html(),
+                            fig10=fig10.to_html())
 
 @app.route('/forecast', methods=['GET', 'POST'])
 def forecast():
