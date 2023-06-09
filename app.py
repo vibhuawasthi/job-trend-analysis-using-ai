@@ -70,27 +70,31 @@ def preprocess_dataset(df):
 def index():
     return render_template('samplehome.html')
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST','GET'])
 def login():
-    email = request.form.get('email')
-    password = request.form.get('password')
-    if not validate_email(email):
-        flash('Invalid email', 'danger')
-        return redirect(url_for('index'))
-    if not validate_password(password):
-        flash('Invalid password', 'danger')
-        return redirect(url_for('index'))
-    db = opendb()
-    user = db.query(User).filter_by(email=email).first()
-    if user is not None and user.verify_password(password):
-        session_add('user_id', user.id)
-        session_add('user_name', user.name)
-        session_add('user_email', user.email)
-        session_add('isauth', True)
-        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        if not validate_email(email):
+            flash('Invalid email', 'danger')
+            return redirect(url_for('login'))
+        if not validate_password(password):
+            flash('Invalid password', 'danger')
+            return redirect(url_for('login'))
+        db = opendb()
+        user = db.query(User).filter_by(email=email).first()
+        if user is not None and user.verify_password(password):
+            session_add('user_id', user.id)
+            session_add('user_name', user.name)
+            session_add('user_email', user.email)
+            session_add('isauth', True)
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid email or password', 'danger')
+            #return redirect(url_for('samplehome')
+            return render_template('login.html')
     else:
-        flash('Invalid email or password', 'danger')
-        return redirect(url_for('index'))
+        return render_template('login.html')
     
 @app.route('/logout')
 def logout():
@@ -127,7 +131,8 @@ def register():
         db_save(User(name=name, email=email, password=password))
         flash('User registered successfully', 'success')
         return redirect(url_for('index'))
-    
+    return render_template('register_modal.html')
+
 @app.route('/dashboard')
 def dashboard():
     if session.get('isauth'):
@@ -234,7 +239,7 @@ def co_relation():
 @app.route('/comparison')
 def co_relation():
     df = load_dataset()
-    fig7 = px.scatter(df, x='industry', y='max_pay', color='industry', title='Relation between max_pay and industry', color_continuous_scale=px.colors.sequential.RdBu, width=800, height=500, opacity=0.8, hover_data=['max_pay', 'industry'], labels={'max_pay':'max_pay', 'industry':'industry'}, template='plotly_dark')
+    fig7 = px.scatter(df, x='industry', y='max_pay', color='industry', title='Relation between max_pay and industry', color_continuous_scale=px.colors.sequential.RdBu, width=800, height=800, opacity=0.8, hover_data=['max_pay', 'industry'], labels={'max_pay':'max_pay', 'industry':'industry'}, template='plotly_dark')
 
     fig8 = df[['min_pay','industry']].groupby(["industry"]).median().sort_values(by='min_pay',
                                                                         ascending=False).head(10)
