@@ -40,6 +40,7 @@ def save_file(file):
 
 def load_dataset():
     df=pd.read_csv('naukri_com-job_sample.csv') 
+    # print(df.columns)
     return df
 
 def load_model():
@@ -68,7 +69,7 @@ def preprocess_dataset(df):
 
 @app.route('/')
 def index():
-    return render_template('samplehome.html')
+    return render_template('index.html')
 
 @app.route('/login', methods=['POST','GET'])
 def login():
@@ -209,15 +210,67 @@ def analysis1():
     unique_df.style.background_gradient(cmap='magma')
     nrow,ncol=df.shape
     info1 = f'There are {nrow} rows and {ncol} colunms in the dataset'
+   
+
+    # filter and find unique() cities from data set
+    df.joblocation_address = df.joblocation_address.str.upper()
+    new_location =df.joblocation_address.str.strip().str.split(",", expand = True)[0].str.split(" ", expand = True)[0].value_counts().reset_index()
+    new_location.columns = ["Location", "Job_Opportunities"]
+    new_location = new_location[:10]
+    new_location.style.background_gradient(cmap = "PuOr") 
+
+    #Dataset Summary statistics 
+    df.describe(include = ['object']).T
+
+    categorical = [var for var in df.columns if df[var].dtype=='O']
+
+    count_missing = df[categorical].isnull().sum()
+    percent_missing =  count_missing* 100 / df.shape[0]
+    missing_value_df = pd.DataFrame({'count_missing': count_missing,
+                                 'percent_missing': percent_missing})
+
+    missing_value_df.style.background_gradient(cmap='tab20b')
+
+    # check missing values in numerical variables
+    numerical = [var for var in df.columns if df[var].dtype!='O']
+
+    count_missing = df[numerical].isnull().sum()
+    percent_missing =  count_missing* 100 / df.shape[0]
+    missing_value_df = pd.DataFrame({'count_missing': count_missing,
+                                    'percent_missing': percent_missing})
+
+    missing_value_df.style.background_gradient(cmap='coolwarm')
+
+    #display the company names..highest to lowest
+    com_Category = df.company.str.lstrip().str.rstrip().value_counts().reset_index()
+    com_Category.columns = ["Company", " Number of Company"]
+    com_Category = com_Category[:10]
+    com_Category.style.background_gradient(cmap = "tab20c")
+
+    #diplay the jobtitle.
+    Category = df.jobtitle.str.lstrip().str.rstrip().value_counts().reset_index()
+    Category.columns = ["jobtitle", " Number of Jobtitle"]
+    Category = Category[:10]
+    Category.style.background_gradient(cmap = "Greens")
+
+    # display the skills
+    skills_Category = df.skills.str.lstrip().str.rstrip().value_counts().reset_index()
+    skills_Category.columns = ["Skills", " Number of Skills"]
+    skills_Category = skills_Category[:10]
+    skills_Category.style.background_gradient(cmap = "hot")
+
     return render_template('analysis1.html',title='Analysis for values',
                            data=missing_value_df.to_html(),
                            unique_data = unique_df.to_html(), 
                            info1 = info1,
-                           columns = df.columns.to_list())
+                           columns = df.columns.to_list(),
+                           new_location = new_location.to_html())
 
-app.route('/corelation')
+
+@app.route('/corelation')
 def co_relation():
     df = load_dataset()
+    print(df.columns)
     fig1 = px.scatter_3d(df, x='avg_payrate', y='avg_experience', z='Year', color='avg_payrate', hover_data=['jobtitle'], title='3D Scatter Plot', width=800, height=600)
 
     fig2 =px.histogram(df, x='min_experience', y='min_pay', title='Relation between min_exp and min_pay', color_discrete_sequence=px.colors.sequential.RdBu, width=800, height=500, opacity=0.8, color='min_pay', hover_data=['min_experience', 'min_pay'], labels={'min_exp':'min_exp', 'min_pay':'min_pay'}, template='plotly_dark')
@@ -237,12 +290,11 @@ def co_relation():
                             fig5=fig5.to_html())
 
 @app.route('/comparison')
-def co_relation():
+def co_mparison():
     df = load_dataset()
     fig7 = px.scatter(df, x='industry', y='max_pay', color='industry', title='Relation between max_pay and industry', color_continuous_scale=px.colors.sequential.RdBu, width=800, height=800, opacity=0.8, hover_data=['max_pay', 'industry'], labels={'max_pay':'max_pay', 'industry':'industry'}, template='plotly_dark')
 
-    fig8 = df[['min_pay','industry']].groupby(["industry"]).median().sort_values(by='min_pay',
-                                                                        ascending=False).head(10)
+    fig8 = df[['min_pay','industry']].groupby(["industry"]).median().sort_values(by='min_pay', ascending=False).head(10)
     px.area(df, x='industry', y='min_pay', title='Relation between min_pay and industry', color_discrete_sequence=px.colors.sequential.RdBu, width=800, height=500, opacity=0.8, hover_data=['min_pay', 'industry'], labels={'min_pay':'min_pay', 'industry':'industry'}, template='plotly_dark')
 
     fig9 = df[['avg_payrate','skills']].groupby(["skills"]).median().sort_values(by='avg_payrate',

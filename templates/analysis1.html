@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
-
 {% block css %}{% endblock %}
-{% block body %}
+{% block content %}
 {% include "notification.html" %}
     <div class="container vh-100 " >
         <div class="row">
@@ -48,6 +47,21 @@
                         {{unique_data|safe}}
                     </div>
                 </div>
+            </div>
+            <div>
+                <div class="col-sm-8 mx-auto mt-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                Unique Cities
+                            </h3>
+                            {{new_location|safe}}
+                        </div>
+                        <div class="card-footer">
+                            The data suggest that the column numberofpostitions is missing around 80% of the data, and thus is not useful
+                        </div>
+                    </div>
+                </div>    
             </div>
         </div>
     </div>
